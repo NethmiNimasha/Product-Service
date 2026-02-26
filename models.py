@@ -4,18 +4,12 @@ from database import Base
 class Product(Base):
     __tablename__ = "products"
 
-    product_id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, primary_key=True, index=True, autoincrement=True) 
     name = Column(String(50), unique=True, index=True, nullable=False)
     price = Column(String(20), nullable=False)
    
    
-class Order_Product(Base):
-    __tablename__ = "order_products"
 
-    order_product_id = Column(Integer, primary_key=True, index=True)
-    order_id = Column(Integer, nullable=False)
-    product_id = Column(Integer, nullable=False)
-    quantity = Column(Integer, nullable=False)
 
 class Proof_Of_Delivery(Base):
     __tablename__ = "proof_of_delivery"

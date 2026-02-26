@@ -42,7 +42,7 @@ def _ensure_products_schema() -> None:
                     FROM INFORMATION_SCHEMA.COLUMNS
                     WHERE TABLE_SCHEMA = DATABASE()
                       AND TABLE_NAME = 'products'
-                      AND COLUMN_NAME = 'discounts'
+                    
                     """
                 )
             ).scalar_one()
@@ -122,7 +122,7 @@ def _product_to_dict(product: models.Product) -> dict:
 
 
 class ProductIn(BaseModel):
-    product_id: int = Field(alias="id")
+    
     name: str
     price: str
   
@@ -157,7 +157,7 @@ async def get_product_by_id(id: int, db: db_dependency):
 @app.post("/new", status_code=status.HTTP_201_CREATED)
 async def create_new_product(product: ProductIn, db: db_dependency):
     db_product = models.Product(
-        product_id=product.product_id,
+       
         name=product.name,
         price=_normalize_price(product.price),
         
@@ -202,91 +202,6 @@ async def delete_product(id: int, db: db_dependency):
     return {"message": "Product deleted successfully"}
 
 
-# --- order products ---
-
-class OrderProductIn(BaseModel):
-    order_product_id: int
-    order_id: int
-    product_id: int
-    quantity: int
-
-
-
-
-class OrderProductPut(BaseModel):
-    order_id: int
-    product_id: int
-    quantity: int
-
-
-@app.post("/order_products", status_code=status.HTTP_201_CREATED)
-async def create_order_product(order_product: OrderProductIn, db: db_dependency):
-    db_order_product = models.Order_Product(**order_product.model_dump())
-    db.add(db_order_product)
-    db.commit()
-    return {"message": "Order product created successfully"}
-
-
-@app.get("/order_products/by-id/{order_product_id}", status_code=status.HTTP_200_OK)
-async def read_order_product_by_id(order_product_id: int, db: db_dependency):
-    order_product = (
-        db.query(models.Order_Product)
-        .filter(models.Order_Product.order_product_id == order_product_id)
-        .first()
-    )
-    if order_product is None:
-        raise HTTPException(status_code=404, detail="Order product not found")
-    return order_product
-
-
-
-
-
-@app.put("/order_products/by-id/{order_product_id}", status_code=status.HTTP_200_OK)
-async def put_order_product(order_product_id: int, product: OrderProductPut, db: db_dependency):
-    db_order_product = (
-        db.query(models.Order_Product)
-        .filter(models.Order_Product.order_product_id == order_product_id)
-        .first()
-    )
-    if db_order_product is None:
-        raise HTTPException(status_code=404, detail="Order product not found")
-
-    db_order_product.order_id = product.order_id
-    db_order_product.product_id = product.product_id
-    db_order_product.quantity = product.quantity
-
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise
-
-    return {"message": "Order product updated successfully"}
-
-
-@app.delete("/order_products/by-id/{order_product_id}", status_code=status.HTTP_200_OK)
-async def delete_order_product(order_product_id: int, db: db_dependency):
-    db_order_product = (
-        db.query(models.Order_Product)
-        .filter(models.Order_Product.order_product_id == order_product_id)
-        .first()
-    )
-    if db_order_product is None:
-        raise HTTPException(status_code=404, detail="Order product not found")
-    db.delete(db_order_product)
-    db.commit()
-    return {"message": "Order product deleted successfully"}
-
-
-@app.get("/order_products/by-order/{order_id}", status_code=status.HTTP_200_OK)
-async def read_order_products_by_order_id(order_id: int, db: db_dependency):
-    return db.query(models.Order_Product).filter(models.Order_Product.order_id == order_id).all()
-
-
-@app.get("/order_products/by-product/{product_id}", status_code=status.HTTP_200_OK)
-async def read_order_products_by_product_id(product_id: int, db: db_dependency):
-    return db.query(models.Order_Product).filter(models.Order_Product.product_id == product_id).all()
 
 
 # --- Proof of Delivery ---
