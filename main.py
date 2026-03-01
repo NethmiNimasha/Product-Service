@@ -146,7 +146,7 @@ async def get_all_products(db: db_dependency):
     return [_product_to_dict(p) for p in products]
 
 
-@app.get("/{id}", status_code=status.HTTP_200_OK)
+@app.get("/products/{id}", status_code=status.HTTP_200_OK)
 async def get_product_by_id(id: int, db: db_dependency):
     product = db.query(models.Product).filter(models.Product.product_id == id).first()
     if product is None:
@@ -174,7 +174,7 @@ async def create_new_product(product: ProductIn, db: db_dependency):
 
 
 
-@app.put("/{id}", status_code=status.HTTP_200_OK)
+@app.put("/products/{id}", status_code=status.HTTP_200_OK)
 async def put_product(id: int, product: ProductPut, db: db_dependency):
     db_product = db.query(models.Product).filter(models.Product.product_id == id).first()
     if db_product is None:
@@ -192,7 +192,7 @@ async def put_product(id: int, product: ProductPut, db: db_dependency):
     return {"message": "Product updated successfully"}
 
 
-@app.delete("/{id}", status_code=status.HTTP_200_OK)
+@app.delete("/products/{id}", status_code=status.HTTP_200_OK)
 async def delete_product(id: int, db: db_dependency):
     db_product = db.query(models.Product).filter(models.Product.product_id == id).first()
     if db_product is None:
@@ -273,6 +273,12 @@ async def create_proof_of_delivery(
         db.rollback()
         raise
     return {"message": "Proof of delivery created successfully"}
+
+
+@app.get("/proof_of_delivery", status_code=status.HTTP_200_OK)
+async def read_all_proof_of_delivery(db: db_dependency):
+    pods = db.query(models.Proof_Of_Delivery).all()
+    return [_pod_to_dict(pod) for pod in pods]
 
 
 
